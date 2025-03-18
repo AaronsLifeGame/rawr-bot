@@ -5,9 +5,10 @@ module.exports = async (message, config) => {
   // Split the message into arguments, with the first being the command
   const args = message.content.slice(config.prefix.length).split(/ +/);
   const command = args.shift().toLowerCase();
+  const input = args.join(' ');
 
   // Log the command for debugging
-  console.log(`Received command: ${command}`);
+  console.log(`Received command: ${command} ${input}`);
 
   // Check if the command exists and execute it
   if (message.client.commands.has(command)) {

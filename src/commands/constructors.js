@@ -8,33 +8,65 @@ module.exports = {
 
     try {
       // Fetch data
-      const driverRows = await getSpreadsheetData('Drivers Championship!B4:E'); // Gamertag, Driver, Points, Discord
-      const constructorRows = await getSpreadsheetData('Constructors Championship!B4:D'); // Team Name, Points
+      const driverRows = await getSpreadsheetData('Drivers Championship!A4:E'); // Position, Gamertag, Team, Points, Discord
+      const constructorRows = await getSpreadsheetData('Constructors Championship!A4:D'); // Position, Empty, Team Name, Points
 
       // Clean up the data by filtering out rows with missing values
-      const validDriverRows = driverRows.filter(row => row[0] && row[1] && row[2] && row[3]);
-      const validConstructorRows = constructorRows.filter(row => row[1] && row[2]);
+      const validDriverRows = driverRows.filter(row => row[1] && row[2] && row[3] && row[4]);
+      const validConstructorRows = constructorRows.filter(row => row[0] && row[2] && row[3]);
+
+      // Merge teams (since each team spans two rows, we only take unique ones)
+      const teamStandings = [];
+      const seenTeams = new Set();
+
+      for (const row of validConstructorRows) {
+        const position = row[0]; // Team position
+        const teamName = row[2];
+        const points = row[3];
+
+        if (!seenTeams.has(teamName)) {
+          seenTeams.add(teamName);
+          teamStandings.push({ position, teamName, points });
+        }
+      }
+
+      // Sort constructor standings by points in descending order
+      teamStandings.sort((a, b) => parseInt(b.points) - parseInt(a.points));
+
+      // Function to format position with ordinal suffix
+      function getOrdinalSuffix(position) {
+        const j = position % 10,
+              k = position % 100;
+        if (j === 1 && k !== 11) return `${position}st`;
+        if (j === 2 && k !== 12) return `${position}nd`;
+        if (j === 3 && k !== 13) return `${position}rd`;
+        return `${position}th`;
+      }
 
       // If input is provided, search for a specific driver or team
       if (input) {
-        // Check if the input matches a team name
-        const team = validConstructorRows.find(row => row[1]?.toLowerCase().trim() === input);
+        // Search for a team by name
+        const teamIndex = teamStandings.findIndex(team => team.teamName.toLowerCase().trim() === input);
 
-        if (team) {
-          return message.reply(`Team ${team[1]} has ${team[2]} points.`);
+        if (teamIndex !== -1) {
+          const team = teamStandings[teamIndex];
+          const position = getOrdinalSuffix(teamIndex + 1);
+          return message.reply(`Team ${team.teamName} is in ${position} place with ${team.points} points.`);
         }
 
         // If input doesn't match a team, check for driver by Gamertag or Discord name
-        const driver = validDriverRows.find(row => 
-          row[0]?.toLowerCase().trim() === input || row[3]?.toLowerCase().trim() === input
+        const driver = validDriverRows.find(row =>
+          row[1]?.toLowerCase().trim() === input || row[4]?.toLowerCase().trim() === input
         );
 
         if (driver) {
           // Find the constructor (team) of the driver
-          const driverTeam = validConstructorRows.find(row => row[1]?.toLowerCase().trim() === driver[1]?.toLowerCase().trim());
+          const teamIndexForDriver = teamStandings.findIndex(team => team.teamName.toLowerCase().trim() === driver[2]?.toLowerCase().trim());
 
-          if (driverTeam) {
-            return message.reply(`Driver ${driver[0]} is in team ${driverTeam[1]} with ${driverTeam[2]} points.`);
+          if (teamIndexForDriver !== -1) {
+            const team = teamStandings[teamIndexForDriver];
+            const teamPosition = getOrdinalSuffix(teamIndexForDriver + 1);
+            return message.reply(`Driver ${driver[1]} is in team ${team.teamName}, which is in ${teamPosition} place with ${team.points} points.`);
           } else {
             return message.reply(`Driver ${driver[1]} is not associated with any team.`);
           }
@@ -44,16 +76,14 @@ module.exports = {
       }
 
       // If no input, show full constructor standings
-      validConstructorRows.sort((a, b) => parseInt(b[2]) - parseInt(a[2])); // Sort by points in descending order
-
       let result = '```' + '\n';
-      result += `Pos | Team                   | Points\n`;
-      result += `----|------------------------|-------\n`;
+      result += `Pos | Team                     | Points\n`;
+      result += `----|--------------------------|-------\n`;
 
-      validConstructorRows.forEach((row, index) => {
+      teamStandings.forEach((team, index) => {
         const rank = (index + 1).toString().padEnd(3);
-        const teamName = row[1].padEnd(24);
-        const points = row[2].toString().padStart(6);
+        const teamName = team.teamName.padEnd(24);
+        const points = team.points.toString().padStart(6);
         result += `${rank} | ${teamName} | ${points}\n`;
       });
 

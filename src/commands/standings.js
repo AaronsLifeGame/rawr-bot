@@ -7,20 +7,32 @@ module.exports = {
     const input = args.join(' ').toLowerCase(); // Get the gamertag/Discord to search for
 
     try {
-      const driverRows = await getSpreadsheetData('Drivers Championship!B4:E');
-      const filteredRows = driverRows.filter(row => row[2] && parseInt(row[2]) > 0); // Exclude zero-point drivers
+      const driverRows = await getSpreadsheetData('Drivers Championship!A4:E');
+      const filteredRows = driverRows.filter(row => row[3] && parseInt(row[3]) > 0); // Exclude zero-point drivers
 
-      filteredRows.sort((a, b) => parseInt(b[2]) - parseInt(a[2])); // Sort by points
+      filteredRows.sort((a, b) => parseInt(b[3]) - parseInt(a[3])); // Sort by points
+
+      // Function to format position with ordinal suffix
+      function getOrdinalSuffix(position) {
+        const j = position % 10,
+              k = position % 100;
+        if (j === 1 && k !== 11) return `${position}st`;
+        if (j === 2 && k !== 12) return `${position}nd`;
+        if (j === 3 && k !== 13) return `${position}rd`;
+        return `${position}th`;
+      }
 
       // If input is provided, search for a specific driver
       if (input) {
-        const driver = filteredRows.find(row => row[0].toLowerCase() === input || row[3].toLowerCase() === input); // Search by Gamertag or Discord
+        const driverIndex = filteredRows.findIndex(row => row[1].toLowerCase() === input || row[4].toLowerCase() === input); // Search by Gamertag or Discord
 
-        if (!driver) {
+        if (driverIndex === -1) {
           return message.reply(`Driver "${input}" not found in the standings.`);
         }
 
-        return message.reply(`${driver[0]} has ${driver[2]} points.`);
+        const driver = filteredRows[driverIndex];
+        const position = getOrdinalSuffix(driverIndex + 1); // Get ordinal position
+        return message.reply(`${driver[1]} is in ${position} place with ${driver[3]} points.`);
       }
 
       // Otherwise, show full standings
@@ -29,10 +41,10 @@ module.exports = {
       result += `----|--------------------------|-------\n`;
 
       filteredRows.forEach((row, index) => {
-        const rank = (index + 1).toString().padEnd(3);
-        const driver = row[0].padEnd(24);
-        const points = row[2].toString().padStart(6);
-        result += `${rank} | ${driver} | ${points}\n`;
+        const rank = (index + 1).toString().padEnd(4);
+        const driver = row[1].padEnd(24);
+        const points = row[3].toString().padStart(6);
+        result += `${rank}| ${driver} | ${points}\n`;
       });
 
       result += '```';

@@ -1,8 +1,6 @@
 const { Client } = require('discord.js');
 
 module.exports = async (client) => {
-  console.log('Bot is online and ready!');
-
   // Set the bots username (global)
   try {
     await client.user.setUsername('rawr_bot');
@@ -17,9 +15,11 @@ module.exports = async (client) => {
     try {
       const member = await guild.members.fetch(client.user.id);
       await member.setNickname(displayName);
-      console.log(`Display name changed to "${displayName}" in guild: ${guild.name}`);
+      // console.log(`Display name changed to "${displayName}" in guild: ${guild.name}`);
     } catch (error) {
       console.error(`Error changing display name in guild ${guild.name}:`, error);
     }
   });
+
+  console.log('Bot is online and ready!');
 };
