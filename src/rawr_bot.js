@@ -32,7 +32,6 @@ client.on('ready', readyEvent);
 client.commands = new Map();
 client.commands.set('points', require('./commands/points'));
 client.commands.set('standings', require('./commands/standings'));
-client.commands.set('constructors', require('./commands/constructors'));
 client.commands.set('help', require('./commands/help'));
 client.commands.set('github', require('./commands/github'));
 

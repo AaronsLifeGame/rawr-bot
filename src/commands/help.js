@@ -6,11 +6,11 @@ module.exports = {
       await message.reply(`
 **Available Commands:**  
 - Prefix: \`*\` - (All commands start with this)
+- Optional values: \`[...]\`
 
 **Drivers And Teams Points:**  
-- \`*points [gamertag/username/team]\` - Displays your current points, or the selected driver/team.  
-- \`*standings [gamertag/username]\` - Displays overall driver standings, or the selected driver.  
-- \`*constructors [gamertag/username/team]\` - Displays overall team standings, or the selected team.  
+- \`*points [driver/team]\` - Displays your current points, or the selected driver/team.  
+- \`*standings [driver/team | 'drivers' or 'constructors']\` - Displays overall drivers/constructors standings, or the selected driver's and team's points.  
 
 **General:**  
 - \`*help\` - Show this help message.

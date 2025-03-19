@@ -2,7 +2,7 @@ const { getSpreadsheetData } = require('../sheets');
 
 module.exports = {
   name: 'points',
-  description: 'Get the total points of a driver or a team',
+  description: 'Displays your current points, or the selected driver/team.',
   async execute(message, args) {
     const input = args.join(' '); // Get gamertag or Discord username from message arguments
 
@@ -29,7 +29,7 @@ module.exports = {
         }
 
         const position = getOrdinalSuffix(parseInt(userRow[0]));
-        return message.reply(`You have ${userRow[3]} points and are in ${position} place.`);
+        return message.reply(`You are in ${position} place with ${userRow[3]} points.`);
       }
 
       // Find driver by Discord or gamertag
@@ -37,7 +37,7 @@ module.exports = {
 
       if (driver) {
         const position = getOrdinalSuffix(parseInt(driver[0]));
-        return message.reply(`${driver[1]} has ${driver[3]} points and is in ${position} place.`);
+        return message.reply(`${driver[1]} is in ${position} place with ${driver[3]} points.`);
       }
 
       // If not found, check constructors for team points
@@ -45,7 +45,7 @@ module.exports = {
         const teamRow = constructorRows[i]; // Only check the first row of each team entry
         if (teamRow[2]?.toLowerCase() === input.toLowerCase()) {
           const position = getOrdinalSuffix(parseInt(teamRow[0]));
-          return message.reply(`Team ${teamRow[2]} has ${teamRow[3]} points and is in ${position} place.`);
+          return message.reply(`${teamRow[2]} in ${position} place with ${teamRow[3]} points.`);
         }
       }
 
